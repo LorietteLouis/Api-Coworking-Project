@@ -1,59 +1,92 @@
-const mockcoworkings = require('../Bdd/mock-coworkings')
+const {CoworkingModel} = require('../Bdd/coworkingSequelize')
+
+
+
 exports.findAllCoworking = (req, res) => {
-    const criterium = req.query.criterium || 'superficy'
-    const orderBy = req.query.orderBy || 'ASC'
 
-    const arrToSort = [...mockcoworkings]
-
-
-
-    if ((orderBy === 'ASC' || orderBy === 'DESC') && (criterium === 'superficy' || criterium === 'capacity')) {
-
-        arrToSort.sort((a, b) => {
-            return orderBy === 'DESC' ? b[criterium] - a[criterium] : a[criterium] - b[criterium]
+    CoworkingModel
+        .findAll()
+        .then(result => {
+            res.json({message: 'La liste des coworkings a bien été récupérée.', data : result})
         })
-    }
-
-    res.json(arrToSort)
+        .catch(error => {
+            res.json({message: `Une erreur est survenue : ${error}` })
+        })
 }
 exports.findCoworkingByPk = (req, res) => {
- 
-
-    let targetCoworking = mockcoworkings.find(el => el.id === parseInt (req.params.id))
-    if (targetCoworking){
-        return res.json({message:`L'id ${targetCoworking.id} a bien été récupéré.`, data: targetCoworking })
-    }else{
-        return res.json({message:`Le coworking ${req.params.id} n'a pas été retrouvé.`})
-    }
+     CoworkingModel
+        .findByPk(req.params.id)
+        .then(result =>{
+            if (!result){
+                res.json({message: `L'élément ayant pour id ${req.params.id} n'existe pas.`})
+            } else {
+                res.json({message: `L'élément a été récupéré.`, data: result})
+            }
+        })
+        .catch(error => {
+            res.json({message: `Une erreur est survenue : ${error}` })
+        })
 }
 
 exports.createdCoworking = (req, res) => {
-            const neoId = mockcoworkings[mockcoworkings.length-1].id +1
-            const newcoworkings = {id : neoId, ...req.body}
-            mockcoworkings.push(newcoworkings)
-            return res.json({message : `Un nouveau coworking n°${newcoworkings.id} a été créé`, data : newcoworkings})
-        }
+        const newcoworkings = req.body
+        CoworkingModel
+        .create({
+            name: newcoworkings.name,
+            price: newcoworkings.price,
+            address: newcoworkings.address,
+            superficy: newcoworkings.superficy,
+            capacity: newcoworkings.capacity,
+            })
+        .then((coworking)=>{
+            res.json({ message:'Un coworking a bien été ajouté',
+            data: coworking})
+        })
+         .catch((error)=>{
+            res.json({ message:`Une erreur est survenu : ${error}`
+        })
+    })
+}
+            // const neoId = mockcoworkings[mockcoworkings.length-1].id +1
+            // const newcoworkings = {id : neoId, ...req.body}
+            // mockcoworkings.push(newcoworkings)
+            // return res.json({message : `Un nouveau coworking n°${newcoworkings.id} a été créé`, data : newcoworkings})
+        
 exports.updatedCoworking = (req,res) => {
-    const indexInArray = mockcoworkings.findIndex((element) =>{
-        return element.id === parseInt(req.params.id)
-    })	
-    let updatedCoworking = {...mockcoworkings[indexInArray],...req.body}
-    mockcoworkings[indexInArray] = updatedCoworking
-
-    if (updatedCoworking){
-        return res.json({message:`Le coworking ${updatedCoworking.id} a été modifié`,data:updatedCoworking})
+    CoworkingModel
+    .findByPk(req.params.id)
+    .then(result =>{
+    if (!result){
+        return res.json({message: 'Aucun coworking trouvé'})
     } else {
-        return res.json({message: `Le coworking ${req.params.id} n'a pas été modifié.`})
+        result
+            .update(req.body)
+            .then(() =>{
+                res.json({message:`Le Coworking a été update: ${result.dataValues.id}`, data:result})
+
+            })
     }
+})
+.catch(error => {
+    res.json({message:`${error}`})
+})
 }
 exports.deletedCoworking = (req,res) => {
-    const indexInArray = mockcoworkings.findIndex((element)=>{
-        return element.id === parseInt(req.params.id)
-    })
-    if (indexInArray === -1){
-        return res.json({message:`L'id ${req.params.id} ne correspond à aucun élément`})
+    CoworkingModel
+    .findByPk(req.params.id)
+    .then(result =>{
+    if (!result){
+        return res.json({message: 'Aucun coworking trouvé'})
     } else {
-        mockcoworkings.splice(indexInArray, 1)
-        return res.json({message:`Le coworking ${req.params.id} est delete`, data:mockcoworkings})
+        result
+            .destroy()
+            .then(() =>{
+                res.json({message:`Coworking supprimé: ${result.dataValues.id}`, data:result})
+
+            })
     }
+})
+.catch(error => {
+    res.json({message:`${error}`})
+})
 }

@@ -7,8 +7,8 @@ const mockcoworkings = require('./mock-coworkings')
         logging:false
     })
     
-    const CoworkingModel = require('../models/coworkingModels')
-    const Coworkings = CoworkingModel(sequelize,DataTypes)
+    const defineCoworkingModel = require('../models/coworkingModel')
+    const CoworkingModel = defineCoworkingModel(sequelize,DataTypes)
     
     
     
@@ -23,7 +23,7 @@ const mockcoworkings = require('./mock-coworkings')
             sequelize.sync({force: true})
             .then(()=>{
                 mockcoworkings.forEach(mock => {
-                    Coworkings.create({
+                    CoworkingModel.create({
                         name: mock.name,
                         price: mock.price,
                         address: mock.address,
@@ -34,5 +34,5 @@ const mockcoworkings = require('./mock-coworkings')
             })
         }
         module.exports = {
-            initDb
+            initDb, CoworkingModel
         }

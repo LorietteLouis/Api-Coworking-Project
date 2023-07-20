@@ -5,11 +5,11 @@ const coworkingController = require('../controllers/coworkingControllers')
 router
         .route('/')
         .get(coworkingController.findAllCoworking)
-        .post(coworkingController.findCoworkingByPk)
+        .post(coworkingController.createdCoworking)
 
 router
         .route('/:id')
-        .get(coworkingController.createdCoworking)
+        .get(coworkingController.findCoworkingByPk)
         .put(coworkingController.updatedCoworking)
         .delete(coworkingController.deletedCoworking)
 
