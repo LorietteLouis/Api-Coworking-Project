@@ -1,5 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const mockcoworkings = require('./mock-coworkings')
+const mockusers = require('./mock-users')
 
     const sequelize = new Sequelize('coworkings', 'root', '', {
         host: 'localhost',
@@ -10,7 +11,8 @@ const mockcoworkings = require('./mock-coworkings')
     const defineCoworkingModel = require('../models/coworkingModel')
     const CoworkingModel = defineCoworkingModel(sequelize,DataTypes)
     
-    
+    const defineUserModel = require('../models/userModel')
+    const UserModel = defineUserModel(sequelize,DataTypes)
     
    
     
@@ -31,8 +33,17 @@ const mockcoworkings = require('./mock-coworkings')
                         capacity: mock.capacity,
                         });
                     })
-            })
-        }
+                    // mockusers.forEach(user =>{
+                     UserModel.create({
+                            firstName:"Louis",
+                            lastName: "Loriette",
+                            username: "UnderSioul",
+                            password:"ATlanThroPiA"
+                    })
+                })
+            }
+            // )
+        // }
         module.exports = {
-            initDb, CoworkingModel
+            initDb, CoworkingModel, UserModel
         }

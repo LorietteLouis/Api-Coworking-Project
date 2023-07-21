@@ -1,4 +1,4 @@
-const {CoworkingModel} = require('../Bdd/coworkingSequelize')
+const {CoworkingModel} = require('../Bdd/sequelize')
 
 
 
@@ -7,10 +7,10 @@ exports.findAllCoworking = (req, res) => {
     CoworkingModel
         .findAll()
         .then(result => {
-            res.json({message: 'La liste des coworkings a bien été récupérée.', data : result})
+            res.status(201).json({message: 'La liste des coworkings a bien été récupérée.', data : result})
         })
         .catch(error => {
-            res.json({message: `Une erreur est survenue : ${error}` })
+            res.status(500).json({message: `Une erreur est survenue : ${error}` })
         })
 }
 exports.findCoworkingByPk = (req, res) => {
@@ -18,13 +18,13 @@ exports.findCoworkingByPk = (req, res) => {
         .findByPk(req.params.id)
         .then(result =>{
             if (!result){
-                res.json({message: `L'élément ayant pour id ${req.params.id} n'existe pas.`})
+                res.status(404).json({message: `L'élément ayant pour id ${req.params.id} n'existe pas.`})
             } else {
-                res.json({message: `L'élément a été récupéré.`, data: result})
+                res.status(201).json({message: `L'élément a été récupéré.`, data: result})
             }
         })
         .catch(error => {
-            res.json({message: `Une erreur est survenue : ${error}` })
+            res.status(500).json({message: `Une erreur est survenue : ${error}` })
         })
 }
 
@@ -39,11 +39,11 @@ exports.createdCoworking = (req, res) => {
             capacity: newcoworkings.capacity,
             })
         .then((coworking)=>{
-            res.json({ message:'Un coworking a bien été ajouté',
+            res.status(201).json({ message:'Un coworking a bien été ajouté',
             data: coworking})
         })
          .catch((error)=>{
-            res.json({ message:`Une erreur est survenu : ${error}`
+            res.status(500).json({ message:`Une erreur est survenu : ${error}`
         })
     })
 }
@@ -57,18 +57,18 @@ exports.updatedCoworking = (req,res) => {
     .findByPk(req.params.id)
     .then(result =>{
     if (!result){
-        return res.json({message: 'Aucun coworking trouvé'})
+        return res.status(404).json({message: 'Aucun coworking trouvé'})
     } else {
-        result
+       return result
             .update(req.body)
             .then(() =>{
-                res.json({message:`Le Coworking a été update: ${result.dataValues.id}`, data:result})
+                res.status(201).json({message:`Le Coworking a été update: ${result.dataValues.id}`, data:result})
 
             })
     }
 })
 .catch(error => {
-    res.json({message:`${error}`})
+    res.status(500).json({message:`${error}`})
 })
 }
 exports.deletedCoworking = (req,res) => {
@@ -76,17 +76,17 @@ exports.deletedCoworking = (req,res) => {
     .findByPk(req.params.id)
     .then(result =>{
     if (!result){
-        return res.json({message: 'Aucun coworking trouvé'})
+        return res.status(404).json({message: 'Aucun coworking trouvé'})
     } else {
-        result
+       return result
             .destroy()
             .then(() =>{
-                res.json({message:`Coworking supprimé: ${result.dataValues.id}`, data:result})
+                res.status(201).json({message:`Coworking supprimé: ${result.dataValues.id}`, data:result})
 
             })
     }
 })
 .catch(error => {
-    res.json({message:`${error}`})
+    res.status(500).json({message:`${error}`})
 })
 }
