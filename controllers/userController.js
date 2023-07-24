@@ -1,5 +1,6 @@
 const { ValidationError, UniqueConstraintError } = require('sequelize')
 const {UserModel} = require('../Bdd/sequelize')
+const  bcrypt = require('bcrypt')
 
 
 
@@ -29,33 +30,7 @@ exports.findUserByPk = (req, res) => {
         })
 }
 
-exports.createdUser = (req, res) => {
-        const users = req.body
-        UserModel
-        .create({
-            firstName: users.firstName,
-            lastName: users.lastName,
-            username: users.username,
-            password: users.password,
-            })
-        .then((user)=>{
-            res.status(201).json({ message:'Un user a bien été ajouté',
-            data: user})
-        })
-         .catch((error)=>{
-            if (error instanceof ValidationError || error instanceof UniqueConstraintError){
-                const cleanMessage = error.message.split(': ')[1]
-                return res.status(400).json({message: cleanMessage})
-         }
-            res.status(500).json({ message:`Une erreur est survenu : ${error}`
-        })
-    })
-}
-            // const neoId = moc éléments users[moc éléments users.length-1].id +1
-            // const ne éléments users = {id : neoId, ...req.body}
-            // moc éléments users.push(ne éléments users)
-            // return res.json({message : `Un nouveau coworking n°${ne éléments users.id} a été créé`, data : ne éléments users})
-        
+
 exports.updatedUser = (req,res) => {
     UserModel
     .findByPk(req.params.id)
@@ -63,10 +38,14 @@ exports.updatedUser = (req,res) => {
     if (!result){
         return res.status(404).json({message: 'Aucun user trouvé'})
     } else {
-       return result
-            .update(req.body)
+        bcrypt.hash(req.body.password, 10)
+        .then(hash => {
+            const dataUser = {...req.body, password: hash}
+            return result
+            .update(dataUser)
             .then(() =>{
                 res.status(201).json({message:`Le Coworking a été update: ${result.dataValues.id}`, data:result})
+                })
 
             })
     }

@@ -1,6 +1,7 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const mockcoworkings = require('./mock-coworkings')
 const mockusers = require('./mock-users')
+const  bcrypt = require('bcrypt')
 
     const sequelize = new Sequelize('coworkings', 'root', '', {
         host: 'localhost',
@@ -11,7 +12,8 @@ const mockusers = require('./mock-users')
     const defineCoworkingModel = require('../models/coworkingModel')
     const CoworkingModel = defineCoworkingModel(sequelize,DataTypes)
     
-    const defineUserModel = require('../models/userModel')
+    const defineUserModel = require('../models/userModel');
+const userModel = require('../models/userModel');
     const UserModel = defineUserModel(sequelize,DataTypes)
     
    
@@ -34,14 +36,18 @@ const mockusers = require('./mock-users')
                         });
                     })
                     // mockusers.forEach(user =>{
+                bcrypt.hash("ATlanThroPiA", 10)
+                    .then(hash => {
                      UserModel.create({
                             firstName:"Louis",
                             lastName: "Loriette",
                             username: "UnderSioul",
-                            password:"ATlanThroPiA"
+                            password: hash
+                            
                     })
-                })
-            }
+                        })
+                    })
+                }
             // )
         // }
         module.exports = {
