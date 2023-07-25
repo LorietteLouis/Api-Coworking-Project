@@ -6,7 +6,7 @@ const authController = require('../controllers/authController')
 router
         .route('/')
         .get(coworkingController.findAllCoworking)
-        .post(authController.protect, coworkingController.createdCoworking)
+        .post(authController.protect, authController.restrictTo('editor'), coworkingController.createdCoworking)
 
 router
         .route('/:id')

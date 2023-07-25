@@ -1,10 +1,10 @@
-const {CoworkingModel} = require('../Bdd/sequelize')
+const {coworkingModel} = require('../Bdd/sequelize')
 
 
 
 exports.findAllCoworking = (req, res) => {
 
-    CoworkingModel
+    coworkingModel
         .findAll()
         .then(result => {
             res.status(201).json({message: 'La liste des coworkings a bien été récupérée.', data : result})
@@ -14,7 +14,7 @@ exports.findAllCoworking = (req, res) => {
         })
 }
 exports.findCoworkingByPk = (req, res) => {
-     CoworkingModel
+     coworkingModel
         .findByPk(req.params.id)
         .then(result =>{
             if (!result){
@@ -30,7 +30,7 @@ exports.findCoworkingByPk = (req, res) => {
 
 exports.createdCoworking = (req, res) => {
         const newcoworkings = req.body
-        CoworkingModel
+        coworkingModel
         .create({
             name: newcoworkings.name,
             price: newcoworkings.price,
@@ -53,7 +53,7 @@ exports.createdCoworking = (req, res) => {
             // return res.json({message : `Un nouveau coworking n°${newcoworkings.id} a été créé`, data : newcoworkings})
         
 exports.updatedCoworking = (req,res) => {
-    CoworkingModel
+    coworkingModel
     .findByPk(req.params.id)
     .then(result =>{
     if (!result){
@@ -72,7 +72,7 @@ exports.updatedCoworking = (req,res) => {
 })
 }
 exports.deletedCoworking = (req,res) => {
-    CoworkingModel
+    coworkingModel
     .findByPk(req.params.id)
     .then(result =>{
     if (!result){

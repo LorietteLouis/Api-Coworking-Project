@@ -1,15 +1,20 @@
 const { ValidationError, UniqueConstraintError } = require('sequelize')
-const {UserModel} = require('../Bdd/sequelize')
+const {userModel} = require('../Bdd/sequelize')
 const  bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const SECRET_KEY = 'ma_clé_secrète'
 
+const rolesHierachy = {
+    user: ["user"],
+    editor: ["user","editor"],
+    admin: ["user","editor","admin"]
+}
 
 exports.signUp = (req, res) => {
     bcrypt.hash(req.body.password, 10)
         .then(hash => {
             const dataUsers = {...req.body,  password: hash}
-            return UserModel
+            return userModel
             .create(dataUsers)
             .then((user)=>{
                 res.status(201).json({ message:'Un user a bien été ajouté',
@@ -27,8 +32,9 @@ exports.signUp = (req, res) => {
 }
 
 exports.logIn = (req, res) => {
-    UserModel.findOne({ where: { username: req.body.username } })
+    userModel.findOne({ where: { username: req.body.username } }) 
         .then(user => {
+            if (!user) return res.status(404).json({ message: `L'utilisateur n'existe pas` })
             bcrypt.compare(req.body.password, user.password)
                 .then(isValid => {
                     if (isValid) {
@@ -43,7 +49,7 @@ exports.logIn = (req, res) => {
                 })
         })
         .catch(error => {
-            console.log(error)
+            return res.status(500).json({ message: error.message })
         })
 }
 
@@ -55,13 +61,56 @@ exports.protect = (req, res, next) => {
     if (token) {
         try {
             const decoded = jwt.verify(token, SECRET_KEY)
-                req.username = decoded.data
-                next()
-            } catch(error) {
-                res.status(403).json({ message: `Le jeton n'est pas valide` })
-            }
+            req.username = decoded.data
+            next()
+        } catch (error) {
+            res.status(403).json({ message: `Le jeton n'est pas valide` })
+        }
     } else {
-        res.status(401).json({ message: `Vous n'avez pas d'autorisation` })
+        res.status(401).json({ message: `Vous n'êtes pas authentifié.` })
     }
+}
 
+exports.restrictTo = (roleParam) => {
+    return (req, res, next) => {
+        return userModel.findOne({ where: { username: req.username } })
+            .then(user => {
+                return RoleModel.findByPk(user.RoleId)
+                    .then(role => {
+                        if (rolesHierarchy[role.label].includes(roleParam)) {
+                            return next()
+                        } else {
+                            return res.status(403).json({ message: `Vous n'avez pas les droits suffisants` })
+                        }
+                    })
+            })
+            .catch(error => {
+                return res.status(500).json({ message: error.message })
+            })
+    }
+}
+
+exports.restrictToOwnUser = (modelParam) => {
+    return (req, res, next) => {
+        modelParam.findByPk(req.params.id)
+            .then(result => {
+                if (!result) {
+                    const message = `La ressource n°${req.params.id} n'existe pas`
+                    return res.status(404).json({ message })
+                }
+                return userModel.findOne({ where: { username: req.username } })
+                    .then(user => {
+                        console.log(result.UserId, user.id)
+                        if (result.UserId !== user.id) {
+                            const message = "Tu n'es pas le créateur de cette ressource";
+                            return res.status(403).json({ message })
+                        }
+                        return next();
+                    })
+            })
+            .catch(err => {
+                const message = "Erreur lors de l'autorisation"
+                res.status(500).json({ message, data: err })
+            })
+    }
 }
